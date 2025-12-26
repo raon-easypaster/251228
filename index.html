@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>빛의 갑옷을 입으라 - 라온동행교회</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700&family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --primary: #002B5B;
+            --accent: #C5A358;
+            --bg: #F9F5EB;
+            --white: #FFFFFF;
+            --text-main: #1A1A1A;
+            --text-sub: #4A4A4A;
+            --transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: #111;
+            font-family: 'Noto Sans KR', sans-serif;
+            overflow: hidden; /* 슬라이드 쇼를 위해 스크롤 숨김 */
+            color: var(--text-main);
+        }
+
+        /* 슬라이드 마스터 컨테이너 */
+        .presentation-wrap {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        .slide {
+            width: 1280px;
+            height: 720px;
+            background-color: var(--bg);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: none; /* 기본적으로 숨김 */
+            flex-direction: column;
+            padding: 80px;
+            box-shadow: 0 40px 100px rgba(0,0,0,0.5);
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .slide.active {
+            display: flex;
+            animation: fadeIn var(--transition);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translate(-50%, -48%); }
+            to { opacity: 1; transform: translate(-50%, -50%); }
+        }
+
+        /* 배경 장식 */
+        .slide::before {
+            content: "";
+            position: absolute;
+            top: -150px;
+            right: -150px;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(197, 163, 88, 0.1) 0%, transparent 70%);
+            z-index: 0;
+        }
+
+        /* 타이틀 스타일 */
+        .slide-title {
+            font-family: 'Noto Serif KR', serif;
+            font-size: 60px;
+            color: var(--primary);
+            margin-bottom: 50px;
+            border-left: 12px solid var(--accent);
+            padding-left: 30px;
+            z-index: 1;
+        }
+
+        .content-area {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            z-index: 1;
+        }
+
+        h1, h2, h3 { margin: 0; }
+        p, li { font-size: 28px; line-height: 1.6; color: var(--text-sub); }
+
+        /* 레이아웃 특화 */
+        .title-layout { text-align: center; justify-content: center; height: 100%; align-items: center; }
+        .title-layout h1 { font-size: 96px; color: var(--primary); font-family: 'Noto Serif KR', serif; margin-bottom: 20px; }
+        .title-layout .subtitle { font-size: 40px; color: var(--accent); font-weight: 700; letter-spacing: 5px; margin-bottom: 40px; }
+
+        .section-title { background-color: var(--primary); justify-content: center; align-items: center; text-align: center; color: var(--white); }
+        .section-title h2 { font-size: 85px; color: var(--accent); font-family: 'Noto Serif KR', serif; }
+        .section-title hr { width: 200px; border: 3px solid var(--accent); margin: 40px auto; }
+
+        .two-column { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; }
+        .image-wrapper { border-radius: 20px; overflow: hidden; box-shadow: 0 15px 30px rgba(0,0,0,0.15); height: 450px; }
+        .image-wrapper img { width: 100%; height: 100%; object-fit: cover; }
+
+        .tiled-content { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; }
+        .tile { background: var(--white); padding: 50px 30px; border-radius: 24px; border-bottom: 10px solid var(--accent); text-align: center; }
+        .tile i { font-size: 60px; color: var(--primary); margin-bottom: 30px; }
+        .tile h3 { font-size: 36px; margin-bottom: 20px; color: var(--primary); font-family: 'Noto Serif KR', serif; }
+
+        .bullet-list { list-style: none; }
+        .bullet-list li { margin-bottom: 40px; padding-left: 60px; position: relative; font-size: 32px; }
+        .bullet-list li i { position: absolute; left: 0; top: 8px; color: var(--accent); font-size: 36px; }
+
+        .bleed-layout { display: grid; grid-template-columns: 1fr 1fr; padding: 0; }
+        .bleed-content { padding: 100px 80px; display: flex; flex-direction: column; justify-content: center; height: 100%; }
+        .bleed-image { width: 100%; height: 720px; object-fit: cover; }
+
+        /* 내비게이션 컨트롤 */
+        .controls {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 100;
+        }
+
+        .btn {
+            background: rgba(0, 43, 91, 0.8);
+            color: white;
+            border: none;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            transition: 0.3s;
+        }
+
+        .btn:hover { background: var(--accent); transform: scale(1.1); }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 8px;
+            background: var(--accent);
+            z-index: 101;
+            transition: width 0.3s;
+        }
+
+        .slide-counter {
+            position: fixed;
+            bottom: 30px;
+            right: 40px;
+            color: rgba(255,255,255,0.5);
+            font-size: 18px;
+            z-index: 100;
+        }
+
+        /* 테이블 및 차트 */
+        table { width: 100%; border-collapse: collapse; }
+        th { font-size: 36px; padding: 30px; border-bottom: 5px solid var(--primary); text-align: left; }
+        td { font-size: 32px; padding: 30px; border-bottom: 1px solid #DDD; }
+
+        .bar-chart { display: flex; flex-direction: column; gap: 50px; }
+        .bar-row { display: flex; align-items: center; gap: 40px; }
+        .bar-label { width: 300px; text-align: right; font-size: 32px; font-weight: 700; color: var(--primary); }
+        .bar-bg { flex-grow: 1; background: #E2E8F0; height: 70px; border-radius: 35px; overflow: hidden; }
+        .bar-fill { height: 100%; display: flex; align-items: center; padding-left: 30px; color: var(--white); font-weight: 700; font-size: 28px; }
+
+        .highlight-numbers { display: flex; justify-content: space-around; align-items: center; gap: 50px; }
+        .number-box { text-align: center; }
+        .number-box .num { font-size: 160px; font-weight: 700; color: var(--primary); line-height: 1; }
+        .number-box .label { font-size: 36px; color: var(--accent); font-weight: 700; }
+
+    </style>
+</head>
+<body>
+
+    <div class="progress-bar" id="progress"></div>
+
+    <div class="presentation-wrap">
+        <!-- 슬라이드 1 -->
+        <div class="slide active" id="s1">
+            <div class="title-layout content-area">
+                <div class="subtitle">로마서 13:11-14</div>
+                <h1>빛의 갑옷을 입으라</h1>
+                <p style="font-size: 36px; color: var(--text-sub); margin-top: 20px;">안주를 넘어 성숙과 사명의 자리로</p>
+                <div style="margin-top: 80px; font-size: 32px; font-weight: 700; color: var(--primary); border: 2px solid var(--primary); padding: 15px 40px; border-radius: 50px;">라온동행교회 주일예배</div>
+            </div>
+        </div>
+
+        <!-- 슬라이드 2 -->
+        <div class="slide section-title" id="s2">
+            <div class="content-area">
+                <h2>시대를 분별하는 신앙</h2>
+                <hr>
+                <p style="font-size: 40px; color: var(--white); opacity: 0.9;">"자다가 깰 때가 벌써 되었으니"</p>
+            </div>
+        </div>
+
+        <!-- 슬라이드 3 -->
+        <div class="slide" id="s3">
+            <h2 class="slide-title">세대주의 신학: 경고와 유익</h2>
+            <div class="content-area">
+                <div class="tiled-content">
+                    <div class="tile">
+                        <i class="fa-solid fa-hourglass-half"></i>
+                        <h3>임박한 나라</h3>
+                        <p>영적 각성과 부흥의 도구.<br>시대적 경종을 울림.</p>
+                    </div>
+                    <div class="tile">
+                        <i class="fa-solid fa-ban"></i>
+                        <h3>정지된 신앙</h3>
+                        <p>깨달음에서 멈춰버린 안주.<br>제자의 삶을 외면함.</p>
+                    </div>
+                    <div class="tile">
+                        <i class="fa-solid fa-person-walking-luggage"></i>
+                        <h3>현재의 응답</h3>
+                        <p>내일의 종말보다 오늘<br>나타나는 하나님 나라.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 슬라이드 4 -->
+        <div class="slide" id="s4">
+            <h2 class="slide-title">참된 안식: 사명을 붙잡는 힘</h2>
+            <div class="content-area">
+                <div class="two-column">
+                    <div style="border-right: 5px solid var(--accent); padding-right: 40px;">
+                        <p style="font-family: 'Noto Serif KR', serif; font-size: 38px; font-style: italic; color: var(--primary); line-height: 1.4;">
+                            "게으름은 사명을 피하지만,<br>
+                            참된 안식은 사명을<br>
+                            더 깊이 붙잡게 합니다."
+                        </p>
+                        <p style="margin-top: 50px; font-size: 28px;">주님 안에서 누리는 쉼은 사역을 위한 재충전이자 부르심에 대한 확신입니다.</p>
+                    </div>
+                    <div class="image-wrapper">
+                        <img src="https://images.unsplash.com/photo-1484557985045-edf25e08da73?auto=format&fit=crop&q=80&w=800" alt="안식">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 슬라이드 5 -->
+        <div class="slide bleed-layout" id="s5">
+            <div class="bleed-content">
+                <h2 style="font-family: 'Noto Serif KR', serif; font-size: 72px; color: var(--primary); margin-bottom: 40px;">여기가 좋사오니</h2>
+                <p style="font-size: 34px; margin-bottom: 40px; font-weight: 700; color: var(--accent);">베드로의 세 초막 제안</p>
+                <p style="font-size: 30px; border-left: 10px solid var(--accent); padding-left: 30px;">
+                    우리는 종종 나만의 평안함 속에 '영적 초막'을 지으려 합니다. 그러나 주님은 우리를 <strong>산 아래 세상</strong>으로 부르십니다.
+                </p>
+            </div>
+            <img class="bleed-image" src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&q=80&w=800" alt="산">
+        </div>
+
+        <!-- 슬라이드 6 -->
+        <div class="slide" id="s6">
+            <h2 class="slide-title">신앙의 성숙: 가만히 있어도</h2>
+            <div class="content-area">
+                <ul class="bullet-list">
+                    <li><i class="fa-solid fa-circle-check"></i> <strong>멈춤의 평안:</strong> 사역이 없을 때도 주님과 동행하는가?</li>
+                    <li><i class="fa-solid fa-circle-check"></i> <strong>본질의 고민:</strong> '아무것도 안 함'의 두려움을 넘어서기</li>
+                    <li><i class="fa-solid fa-circle-check"></i> <strong>눕고 싶은 욕심:</strong> 편안함을 추구하는 본성을 거스르는 결단</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 슬라이드 7 -->
+        <div class="slide" id="s7">
+            <h2 class="slide-title">2025년: 광야에서 묻다</h2>
+            <div class="content-area">
+                <div class="two-column">
+                    <p style="font-size: 34px; line-height: 1.8;">
+                        "재정적 한계 속에서 목회를 소홀히 하지는 않을까 두렵습니다."<br><br>
+                        성도들의 고단한 삶을 몸소 겪으며, <strong>좋아하는 삶</strong>이 아닌 <strong>맡겨진 삶</strong>을 살아내는 거룩한 긴장감.
+                    </p>
+                    <div class="image-wrapper">
+                        <img src="https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&q=80&w=800" alt="카페">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 슬라이드 8 -->
+        <div class="slide" id="s8">
+            <h2 class="slide-title">좁은 길의 결단</h2>
+            <div class="content-area">
+                <div class="tiled-content">
+                    <div class="tile">
+                        <i class="fa-solid fa-earth-globe"></i>
+                        <h3>선교의 길</h3>
+                        <p>재정적 부담을 넘어 필리핀과 방글라데시로.</p>
+                    </div>
+                    <div class="tile">
+                        <i class="fa-solid fa-shield-heart"></i>
+                        <h3>본성의 절제</h3>
+                        <p>명예욕을 경계하며 대접받음을 피함.</p>
+                    </div>
+                    <div class="tile">
+                        <i class="fa-solid fa-user-shield"></i>
+                        <h3>영적 긴장</h3>
+                        <p>나의 본성이 튀어 나올까 늘 두려워하는 태도.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 슬라이드 9 -->
+        <div class="slide" id="s9">
+            <h2 class="slide-title">도파민의 시대, 거룩한 결단</h2>
+            <div class="content-area">
+                <div class="highlight-numbers">
+                    <div class="number-box">
+                        <div class="num">24/7</div>
+                        <div class="label">세상의 유혹</div>
+                    </div>
+                    <div style="max-width: 600px;">
+                        <h3 style="font-size: 45px; color: var(--primary); margin-bottom: 30px;">결단이라는 기적</h3>
+                        <p style="font-size: 34px;">수많은 즐거움을 뒤로하고 예배의 자리로 나오는 것은 엄청난 결단이자 성령의 역사입니다.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 슬라이드 10 -->
+        <div class="slide" id="s10">
+            <h2 class="slide-title">진심으로 즐거워하는 예물</h2>
+            <div class="content-area">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>구분</th>
+                            <th>세상의 기준</th>
+                            <th>하나님의 기준</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="font-weight: 700;">동기</td>
+                            <td>의무와 강요</td>
+                            <td style="color: var(--accent); font-weight: 700;">진심과 즐거움</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: 700;">가치</td>
+                            <td>경제적 여유 확보</td>
+                            <td style="color: var(--accent); font-weight: 700;">하나님 나라 확장</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: 700;">결과</td>
+                            <td>가시적인 보상</td>
+                            <td style="color: var(--accent); font-weight: 700;">이해할 수 없는 은혜</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 슬라이드 11 -->
+        <div class="slide" id="s11">
+            <h2 class="slide-title">그리스도인의 영적 타율</h2>
+            <div class="content-area">
+                <div class="bar-chart">
+                    <div class="bar-row">
+                        <div class="bar-label">3할 타자 (KBO)</div>
+                        <div class="bar-bg"><div class="bar-fill" style="width: 30%; background: var(--accent);">성공의 상징 (30%)</div></div>
+                    </div>
+                    <div class="bar-row">
+                        <div class="bar-label">그리스도인의 삶</div>
+                        <div class="bar-bg"><div class="bar-fill" style="width: 100%; background: var(--primary);">완전한 사명 (100%)</div></div>
+                    </div>
+                </div>
+                <p style="text-align: center; margin-top: 80px; font-size: 38px; font-weight: 700; color: var(--primary);">
+                    "누군가에겐 마지막 설교일 수 있기에,<br>우리는 10할의 진심으로 살아야 합니다."
+                </p>
+            </div>
+        </div>
+
+        <!-- 슬라이드 12 -->
+        <div class="slide section-title" id="s12">
+            <div class="content-area">
+                <p style="font-size: 40px; color: var(--accent); font-weight: 700; margin-bottom: 20px;">신앙은 취미생활이 아닙니다</p>
+                <h2 style="font-size: 95px;">소명에 응답하십시오</h2>
+                <hr>
+                <p style="font-size: 36px;">어제보다 오늘 더, 오늘보다 내일 더 성장하는<br>라온동행교회 성도들을 축복합니다.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="btn" id="prevBtn"><i class="fa-solid fa-chevron-left"></i></button>
+        <button class="btn" id="nextBtn"><i class="fa-solid fa-chevron-right"></i></button>
+    </div>
+
+    <div class="slide-counter" id="counter">1 / 12</div>
+
+    <script>
+        const slides = document.querySelectorAll('.slide');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const counter = document.getElementById('counter');
+        const progress = document.getElementById('progress');
+        
+        let currentSlide = 0;
+
+        function updateSlides() {
+            slides.forEach((slide, index) => {
+                slide.classList.remove('active');
+                if (index === currentSlide) {
+                    slide.classList.add('active');
+                }
+            });
+            counter.innerText = `${currentSlide + 1} / ${slides.length}`;
+            progress.style.width = `${((currentSlide + 1) / slides.length) * 100}%`;
+        }
+
+        prevBtn.addEventListener('click', () => {
+            if (currentSlide > 0) {
+                currentSlide--;
+                updateSlides();
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentSlide < slides.length - 1) {
+                currentSlide++;
+                updateSlides();
+            }
+        });
+
+        // 키보드 내비게이션
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                if (currentSlide < slides.length - 1) {
+                    currentSlide++;
+                    updateSlides();
+                }
+            } else if (e.key === 'ArrowLeft') {
+                if (currentSlide > 0) {
+                    currentSlide--;
+                    updateSlides();
+                }
+            }
+        });
+
+        // 초기화
+        updateSlides();
+    </script>
+</body>
+</html>
